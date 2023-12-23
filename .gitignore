@@ -1,0 +1,5 @@
+.vscode/
+
+mongodb_data/
+
+app.log
