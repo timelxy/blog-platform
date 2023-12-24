@@ -1,5 +1,3 @@
-# How to 
-
 1. build and run this app
 ```shell
 # under root dir of application, exec this command
