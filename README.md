@@ -15,9 +15,10 @@ git clone git@github.com:timelxy/blog-platform.git
 
 
 ## 3. Build and run this app
+
+Under root directory of blog-platform, execute this command. If you don't have golang or docker-compose enviroment, please install it first.
+
 ```shell
-# Under root directory of blog-platform, execute this command.
-# If you don't have golang or docker-compose enviroment, please install it first.
 make all
 ```
 
