@@ -3,3 +3,5 @@
 mongodb_data/
 
 app.log
+
+output/

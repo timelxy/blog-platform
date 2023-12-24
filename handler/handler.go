@@ -1,22 +1,30 @@
 package handler
 
 import (
+	"blog-platform/model"
 	"blog-platform/resource"
-	"context"
-	"fmt"
+	"blog-platform/service"
 	"net/http"
 	"time"
 
 	"github.com/labstack/echo/v4"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-type Post struct {
-	ID          *primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
-	Title       string              `json:"title,omitempty" bson:"title"`
-	Content     string              `json:"content,omitempty" bson:"content"`
-	CreatedDate time.Time           `json:"created_date,omitempty" bson:"cteated_date"`
+type HandlerInterface interface {
+	CreatePost(ctx echo.Context) (err error)
+	RetrievePostByID(ctx echo.Context) (err error)
+	RetrieveAllPosts(ctx echo.Context) (err error)
+	HealthCheckHandler(ctx echo.Context) (err error)
+}
+
+type HandlerImpl struct {
+	Service service.PostServiceInterface
+}
+
+func NewHandler() HandlerInterface {
+	return &HandlerImpl{
+		Service: service.NewPostService(),
+	}
 }
 
 // RetrieveAllPosts godoc
@@ -27,26 +35,12 @@ type Post struct {
 // @Produce json
 // @Success 200 {array} Post
 // @Router /posts [get]
-func RetrieveAllPosts(ctx echo.Context) (err error) {
-	collection := resource.MongoClient.Database("blog").Collection("posts")
-	cursor, err := collection.Find(context.Background(), bson.M{})
+func (h *HandlerImpl) RetrieveAllPosts(ctx echo.Context) (err error) {
+	posts, err := h.Service.RetrieveAllPosts(ctx)
 	if err != nil {
 		return
 	}
-	defer cursor.Close(context.Background())
-
-	// Traverse all posts
-	var posts []Post
-	for cursor.Next(context.Background()) {
-		var post Post
-		if err = cursor.Decode(&post); err != nil {
-			return
-		}
-		posts = append(posts, post)
-	}
-
 	return ctx.JSON(http.StatusOK, posts)
-
 }
 
 // RetrievePostByID godoc
@@ -58,22 +52,10 @@ func RetrieveAllPosts(ctx echo.Context) (err error) {
 // @Param id path string true "Post ID"
 // @Success 200 {object} Post
 // @Router /posts/{id} [get]
-func RetrievePostByID(ctx echo.Context) (err error) {
-	collection := resource.MongoClient.Database("blog").Collection("posts")
+func (h *HandlerImpl) RetrievePostByID(ctx echo.Context) (err error) {
 	id := ctx.Param("id")
 
-	// id string to objectID
-	objectID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return
-	}
-
-	// Condition
-	filter := bson.M{"_id": objectID}
-
-	// Find it
-	var post Post
-	err = collection.FindOne(context.Background(), filter).Decode(&post)
+	post, err := h.Service.RetrievePostByID(ctx, id)
 	if err != nil {
 		return
 	}
@@ -90,39 +72,21 @@ func RetrievePostByID(ctx echo.Context) (err error) {
 // @Param input body Post true "Post object that needs to be added"
 // @Success 200 {object} Post
 // @Router /posts [post]
-func CreateNewPost(ctx echo.Context) (err error) {
+func (h *HandlerImpl) CreatePost(ctx echo.Context) (err error) {
 	// Parse query payload
-	payload := new(Post)
-	if err = ctx.Bind(payload); err != nil {
+	post := new(model.Post)
+	if err = ctx.Bind(post); err != nil {
 		return
 	}
-
 	createAt := time.Now()
+	post.CreatedDate = createAt
 
-	post := Post{
-		Title:       payload.Title,
-		Content:     payload.Content,
-		CreatedDate: createAt,
-	}
-
-	// Insert
-	collection := resource.MongoClient.Database("blog").Collection("posts")
-	insertResult, err := collection.InsertOne(context.Background(), post)
+	err = h.Service.CreatePost(ctx, post)
 	if err != nil {
 		return
 	}
 
-	id, ok := insertResult.InsertedID.(primitive.ObjectID)
-	if !ok {
-		return fmt.Errorf("insertResult of mongo has no InsertedID")
-	}
-
-	output := Post{
-		ID:          &id,
-		CreatedDate: createAt,
-	}
-
-	return ctx.JSON(http.StatusOK, output)
+	return ctx.JSON(http.StatusOK, post)
 }
 
 // HealthCheckHandler godoc
@@ -134,7 +98,7 @@ func CreateNewPost(ctx echo.Context) (err error) {
 // @Success 200 {string} string "Everything is fine!"
 // @Failure 500 {string} string "MongoDB connection failed!"
 // @Router /healthcheck [get]
-func HealthCheckHandler(ctx echo.Context) (err error) {
+func (h *HandlerImpl) HealthCheckHandler(ctx echo.Context) (err error) {
 	// Check mongodb connection
 	err = resource.MongoClient.Ping(ctx.Request().Context(), nil)
 	if err != nil {
