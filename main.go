@@ -1,9 +1,9 @@
 package main
 
 import (
+	"blog-platform/resource"
+	"blog-platform/router"
 	"context"
-	"ocr/resource"
-	"ocr/router"
 	"os"
 
 	"github.com/labstack/echo/v4"

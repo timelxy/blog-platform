@@ -1,9 +1,10 @@
 package handler
 
 import (
+	"blog-platform/resource"
 	"context"
+	"fmt"
 	"net/http"
-	"ocr/resource"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -12,12 +13,20 @@ import (
 )
 
 type Post struct {
-	Title       string    `json:"title"`
-	Content     string    `json:"content"`
-	CreatedDate time.Time `json:"created_date"`
+	ID          *primitive.ObjectID `json:"id,omitempty" bson:"_id,omitempty"`
+	Title       string              `json:"title,omitempty" bson:"title"`
+	Content     string              `json:"content,omitempty" bson:"content"`
+	CreatedDate time.Time           `json:"created_date,omitempty" bson:"cteated_date"`
 }
 
-// Retrieve all posts
+// RetrieveAllPosts godoc
+// @Summary Retrieve all posts
+// @Description Get all posts
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Success 200 {array} Post
+// @Router /posts [get]
 func RetrieveAllPosts(ctx echo.Context) (err error) {
 	collection := resource.MongoClient.Database("blog").Collection("posts")
 	cursor, err := collection.Find(context.Background(), bson.M{})
@@ -40,7 +49,15 @@ func RetrieveAllPosts(ctx echo.Context) (err error) {
 
 }
 
-// Retrieves a blog post with given ID
+// RetrievePostByID godoc
+// @Summary Retrieve a post by ID
+// @Description Get a post by ID
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param id path string true "Post ID"
+// @Success 200 {object} Post
+// @Router /posts/{id} [get]
 func RetrievePostByID(ctx echo.Context) (err error) {
 	collection := resource.MongoClient.Database("blog").Collection("posts")
 	id := ctx.Param("id")
@@ -64,7 +81,15 @@ func RetrievePostByID(ctx echo.Context) (err error) {
 	return ctx.JSON(http.StatusOK, post)
 }
 
-// Creates a new blog post
+// CreateNewPost godoc
+// @Summary Create a new post
+// @Description Create a new post
+// @Tags posts
+// @Accept json
+// @Produce json
+// @Param input body Post true "Post object that needs to be added"
+// @Success 200 {object} Post
+// @Router /posts [post]
 func CreateNewPost(ctx echo.Context) (err error) {
 	// Parse query payload
 	payload := new(Post)
@@ -72,10 +97,12 @@ func CreateNewPost(ctx echo.Context) (err error) {
 		return
 	}
 
+	createAt := time.Now()
+
 	post := Post{
 		Title:       payload.Title,
 		Content:     payload.Content,
-		CreatedDate: time.Now(),
+		CreatedDate: createAt,
 	}
 
 	// Insert
@@ -85,5 +112,15 @@ func CreateNewPost(ctx echo.Context) (err error) {
 		return
 	}
 
-	return ctx.JSON(http.StatusOK, insertResult)
+	id, ok := insertResult.InsertedID.(primitive.ObjectID)
+	if !ok {
+		return fmt.Errorf("insertResult of mongo has no InsertedID")
+	}
+
+	output := Post{
+		ID:          &id,
+		CreatedDate: createAt,
+	}
+
+	return ctx.JSON(http.StatusOK, output)
 }
