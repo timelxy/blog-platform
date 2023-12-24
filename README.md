@@ -37,7 +37,7 @@ curl --location 'localhost:8082/posts' \
 # retrieve all posts
 curl --location 'localhost:8082/posts'
 
-# retrieve post by id, you need to replace right id in url below.
+# retrieve post by id, you need to replace ${id} in url below.
 curl --location 'localhost:8082/posts/${id}'
 
 
