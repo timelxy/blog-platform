@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  handler.Post:
+  model.Post:
     properties:
       content:
         type: string
@@ -10,6 +10,9 @@ definitions:
         type: string
       title:
         type: string
+    required:
+    - content
+    - title
     type: object
 host: localhost:8082
 info:
@@ -50,7 +53,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/handler.Post'
+              $ref: '#/definitions/model.Post'
             type: array
       summary: Retrieve all posts
       tags:
@@ -65,14 +68,18 @@ paths:
         name: input
         required: true
         schema:
-          $ref: '#/definitions/handler.Post'
+          $ref: '#/definitions/model.Post'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.Post'
+            $ref: '#/definitions/model.Post'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
       summary: Create a new post
       tags:
       - posts
@@ -93,7 +100,11 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/handler.Post'
+            $ref: '#/definitions/model.Post'
+        "404":
+          description: Not Found
+          schema:
+            type: string
       summary: Retrieve a post by ID
       tags:
       - posts

@@ -33,12 +33,15 @@ func NewHandler() HandlerInterface {
 // @Tags posts
 // @Accept json
 // @Produce json
-// @Success 200 {array} Post
+// @Success 200 {array} model.Post
 // @Router /posts [get]
 func (h *HandlerImpl) RetrieveAllPosts(ctx echo.Context) (err error) {
 	posts, err := h.Service.RetrieveAllPosts(ctx)
 	if err != nil {
 		return
+	}
+	if posts == nil {
+		posts = []model.Post{}
 	}
 	return ctx.JSON(http.StatusOK, posts)
 }
@@ -50,14 +53,15 @@ func (h *HandlerImpl) RetrieveAllPosts(ctx echo.Context) (err error) {
 // @Accept json
 // @Produce json
 // @Param id path string true "Post ID"
-// @Success 200 {object} Post
+// @Success 200 {object} model.Post
+// @Failure 404 {string} string
 // @Router /posts/{id} [get]
 func (h *HandlerImpl) RetrievePostByID(ctx echo.Context) (err error) {
 	id := ctx.Param("id")
 
 	post, err := h.Service.RetrievePostByID(ctx, id)
 	if err != nil {
-		return
+		return ctx.String(http.StatusNotFound, err.Error())
 	}
 
 	return ctx.JSON(http.StatusOK, post)
@@ -69,8 +73,9 @@ func (h *HandlerImpl) RetrievePostByID(ctx echo.Context) (err error) {
 // @Tags posts
 // @Accept json
 // @Produce json
-// @Param input body Post true "Post object that needs to be added"
-// @Success 200 {object} Post
+// @Param input body model.Post true "Post object that needs to be added"
+// @Success 200 {object} model.Post
+// @Failure 500 {string} string
 // @Router /posts [post]
 func (h *HandlerImpl) CreatePost(ctx echo.Context) (err error) {
 	// Parse query payload
@@ -78,6 +83,13 @@ func (h *HandlerImpl) CreatePost(ctx echo.Context) (err error) {
 	if err = ctx.Bind(post); err != nil {
 		return
 	}
+
+	// Validate body
+	if err = resource.Validate.Struct(post); err != nil {
+		err = echo.NewHTTPError(http.StatusBadRequest, err.Error())
+		return
+	}
+
 	createAt := time.Now()
 	post.CreatedDate = createAt
 

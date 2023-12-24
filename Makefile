@@ -24,6 +24,7 @@ test: check
 # Clean build output
 clean:
 	@echo "Cleaning up..."
+	@docker-compose down
 	@rm -rf $(BUILD_DIR)
 
 check:

@@ -64,7 +64,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/handler.Post"
+                                "$ref": "#/definitions/model.Post"
                             }
                         }
                     }
@@ -89,7 +89,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.Post"
+                            "$ref": "#/definitions/model.Post"
                         }
                     }
                 ],
@@ -97,7 +97,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.Post"
+                            "$ref": "#/definitions/model.Post"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -129,7 +135,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/handler.Post"
+                            "$ref": "#/definitions/model.Post"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -137,8 +149,12 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "handler.Post": {
+        "model.Post": {
             "type": "object",
+            "required": [
+                "content",
+                "title"
+            ],
             "properties": {
                 "content": {
                     "type": "string"

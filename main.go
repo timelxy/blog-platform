@@ -6,6 +6,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -31,6 +32,9 @@ func main() {
 			panic(err)
 		}
 	}()
+
+	// validator
+	resource.Validate = validator.New(validator.WithRequiredStructEnabled())
 
 	// Register routes
 	router.RegisterRoutes(e)
