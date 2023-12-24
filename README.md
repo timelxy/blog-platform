@@ -1,25 +1,51 @@
-1. build and run this app
+1. Make sure ports below are available on your computer.
+8082: API Server
+8081: MongoUI
+27017: MongoDB
+
+
+2. Build and run this app
 ```shell
-# under root dir of application, exec this command
-# If you don't have Go or docker-compose enviroment, please install it first.
+# Under root directory of blog-platform, execute this command.
+# If you don't have golang or docker-compose enviroment, please install it first.
 make all
 ```
 
 then you can try make some requests to it.
 
+```shell
 
-2. read data with MongoUI inserted in MongoDB
+# create a new post
+curl --location 'localhost:8082/posts' \
+--header 'Content-Type: application/json' \
+--data '{
+    "title": "hello world",
+    "content": "hello world, this is blog-platform."
+}'
+
+# retrieve all posts
+curl --location 'localhost:8082/posts'
+
+# retrieve post by id, you need to replace right id in url below.
+curl --location 'localhost:8082/posts/${id}'
+
+
+```
+
+
+3. Read MongoDB document with MongoUI
+
 http://localhost:8081
-Username: admin
-Passward: pass
+
+`Username: admin Passward: pass`
 
 
-3. get Swagger Specification and HTML Docs?
+4. Get Swagger Specification and HTML Docs?
 
 SwaggerUI: http://localhost:8082/swagger/index.html
 Swagger API Specification: http://localhost:8082/swagger/doc.json
 
-4. cleanup 
+5. Clean up build outputs and shut down the container.
 ```shell
 make clean
 ```
