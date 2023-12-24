@@ -16,6 +16,35 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/healthcheck": {
+            "get": {
+                "description": "Check if the server is running and MongoDB connection is established",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "health"
+                ],
+                "summary": "Check server health status",
+                "responses": {
+                    "200": {
+                        "description": "Everything is fine!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "MongoDB connection failed!",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/posts": {
             "get": {
                 "description": "Get all posts",

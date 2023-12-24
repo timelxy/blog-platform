@@ -124,3 +124,23 @@ func CreateNewPost(ctx echo.Context) (err error) {
 
 	return ctx.JSON(http.StatusOK, output)
 }
+
+// HealthCheckHandler godoc
+// @Summary Check server health status
+// @Description Check if the server is running and MongoDB connection is established
+// @Tags health
+// @Accept json
+// @Produce json
+// @Success 200 {string} string "Everything is fine!"
+// @Failure 500 {string} string "MongoDB connection failed!"
+// @Router /healthcheck [get]
+func HealthCheckHandler(ctx echo.Context) (err error) {
+	// Check mongodb connection
+	err = resource.MongoClient.Ping(ctx.Request().Context(), nil)
+	if err != nil {
+		return ctx.String(http.StatusInternalServerError, "MongoDB connection failed!")
+	}
+
+	return ctx.String(http.StatusOK, "Everything is fine!")
+
+}

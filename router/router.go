@@ -22,6 +22,9 @@ func RegisterRoutes(e *echo.Echo) {
 	// For SwaggerUI
 	e.GET("/swagger/*", echoSwagger.WrapHandler)
 
+	// For health check of application and mongodb
+	e.GET("/healthcheck", handler.HealthCheckHandler)
+
 	e.GET("/posts", handler.RetrieveAllPosts)
 
 	e.POST("/posts", handler.CreateNewPost)

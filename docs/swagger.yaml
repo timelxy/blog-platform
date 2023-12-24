@@ -19,6 +19,25 @@ info:
   title: Blog Platform API
   version: "1.0"
 paths:
+  /healthcheck:
+    get:
+      consumes:
+      - application/json
+      description: Check if the server is running and MongoDB connection is established
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Everything is fine!
+          schema:
+            type: string
+        "500":
+          description: MongoDB connection failed!
+          schema:
+            type: string
+      summary: Check server health status
+      tags:
+      - health
   /posts:
     get:
       consumes:
